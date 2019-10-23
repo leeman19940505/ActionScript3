@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties includeAllClasses="true" useMultiPlatformConfig="false" version="3">
+  <includeClasses>
+    <classEntry path="controllers.BasicController"/>
+    <classEntry path="controllers.VillaFacadeExternalController"/>
+    <classEntry path="controllers.VillaFacadeModelingController"/>
+    <classEntry path="controllers.VillaFacadePorchController"/>
+    <classEntry path="controllers.VillaFacadeStairController"/>
+    <classEntry path="controllers.VillaFacadeTopController"/>
+    <classEntry path="utils.VillaFacadeControllerManager"/>
+    <classEntry path="utils.VillaFacadeDispatcher"/>
+    <classEntry path="datas.NavigationData"/>
+    <classEntry path="utils.TestUtils"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests/>
+</flexLibProperties>

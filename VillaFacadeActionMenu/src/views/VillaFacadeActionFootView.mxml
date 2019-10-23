@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 creationComplete="group1_creationCompleteHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.components.VGroup;
+			
+			import components.VillaToolView;
+			
+			import consts.ToolConstsType;
+			
+			import extension.wl.globalData.allStaticTypes.ColorType;
+			import extension.wl.globalData.allStaticTypes.LivelyType;
+			import extension.wl.views.LineHorizontal;
+			
+			import utils.VillaFacadeMenuManager;
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			private var basicGroup:VGroup = null;
+			private var toolViewST:VillaToolView = null; //第一层
+			private var toolViewED:VillaToolView = null; //第二层
+			
+			private var lineST:LineHorizontal = null;
+			private var lineED:LineHorizontal = null;
+			
+			protected function group1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+			}
+			
+			public function initView():void
+			{
+				if(!basicGroup)
+				{
+					var gap:int = 2;
+					basicGroup = VillaFacadeMenuManager.buildVgroup(this.width, this.height, "center", "top", gap);
+					this.addElement(basicGroup);
+				}
+				
+				if(!toolViewST)
+				{
+					toolViewST = new VillaToolView();
+					toolViewST.width = basicGroup.width;
+					toolViewST.height = basicGroup.height * 0.5;
+					toolViewST.pageLength = 4;
+					toolViewST.viewType = ToolConstsType.BODY_FOOT_TOOL;
+					toolViewST.initData();
+					basicGroup.addElement(toolViewST);
+				}
+				
+				if(!lineST)
+				{
+					lineST = VillaFacadeMenuManager.buildHorizontalLine(ColorType.LightGreyLively);
+					lineST.top = 0;
+					this.addElement(lineST);
+				}
+				
+				if(!toolViewED)
+				{
+					toolViewED = new VillaToolView();
+					toolViewED.width = basicGroup.width;
+					toolViewED.height = basicGroup.height * 0.5;
+					toolViewED.pageLength = 4;
+					toolViewED.viewType = ToolConstsType.FOOT_TOOL;
+					toolViewED.initData();
+					basicGroup.addElement(toolViewED);
+				}
+				
+				if(!lineED)
+				{
+					lineST = VillaFacadeMenuManager.buildHorizontalLine(ColorType.LightGreyLively);
+					lineST.bottom = toolViewED.height;
+					this.addElement(lineST);
+				}
+			}
+			
+			private function removeAllItem():void
+			{
+				// TODO Auto Generated method stub
+				
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="{LivelyType.backgroundColor}"/>
+		</s:fill>
+	</s:Rect>
+</s:Group>

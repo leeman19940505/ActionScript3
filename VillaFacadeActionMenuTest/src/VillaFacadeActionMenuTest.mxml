@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   creationComplete="application1_creationCompleteHandler(event)">
+	<fx:Script>    
+		<![CDATA[        
+			import mx.events.FlexEvent;
+			  
+			import components.VillaToolView;
+			   
+			import consts.ToolConstsType;
+			
+			import extension.wl.globalData.allStaticTypes.ColorType;
+			
+			import utils.FitBorder;     
+			       
+			            
+			         
+			    
+			private var manager:VillaFacadeActionMenuManager = null;
+			protected function application1_creationCompleteHandler(event:FlexEvent):void
+			{       
+				// TODO Auto-generated method stub
+				manager = new VillaFacadeActionMenuManager();
+				manager.livelyMain = this;  
+			}    
+			     
+			protected function villaFacadeActionMenuTest_clickHandler(event:MouseEvent):void
+			{  
+				// TODO Auto-generated method stub 
+				if(manager)   
+				{    
+					manager.buildVillaFacadeActionMenu();
+				}  
+			}     
+			      
+			protected function villaToolViewTest1_clickHandler(event:MouseEvent):void
+			{   
+				// TODO Auto-generated method stub
+				var villaToolView:VillaToolView = new VillaToolView();
+				villaToolView.width = FitBorder.getLibraryWidth(this.height);
+				villaToolView.height = 45;     
+				villaToolView.pageLength = 4;
+				villaToolView.viewType = ToolConstsType.HEAD_TOOL;
+				villaToolView.initData();  
+				villaToolView.x = 300;   
+				villaToolView.y = 100;  
+				this.addElement(villaToolView); 
+			}   
+			  
+			protected function villaToolViewTest2_clickHandler(event:MouseEvent):void
+			{    
+				// TODO Auto-generated method stub
+				var villaToolView:VillaToolView = new VillaToolView();
+				villaToolView.width = FitBorder.getLibraryWidth(this.height);
+				villaToolView.height = 45;   
+				villaToolView.pageLength = 4; 
+				villaToolView.viewType = ToolConstsType.BODY_HEAD_TOOL;
+				villaToolView.initData();   
+				villaToolView.x = 300;  
+				villaToolView.y = 150;   
+				this.addElement(villaToolView);
+			}  
+			 
+			protected function villaToolViewTest3_clickHandler(event:MouseEvent):void
+			{ 
+				// TODO Auto-generated method stub
+				var villaToolView:VillaToolView = new VillaToolView();
+				villaToolView.width = FitBorder.getLibraryWidth(this.height);
+				villaToolView.height = 45;   
+				villaToolView.pageLength = 4;
+				villaToolView.viewType = ToolConstsType.BODY_FOOT_TOOL;
+				villaToolView.initData();  
+				villaToolView.x = 300;
+				villaToolView.y = 200; 
+				this.addElement(villaToolView);
+			}   
+			      
+			protected function villaToolViewTest4_clickHandler(event:MouseEvent):void
+			{  
+				// TODO Auto-generated method stub
+				var villaToolView:VillaToolView = new VillaToolView();
+				villaToolView.width = FitBorder.getLibraryWidth(this.height);
+				villaToolView.height = 45;    
+				villaToolView.pageLength = 4;
+				villaToolView.viewType = ToolConstsType.FOOT_TOOL;
+				villaToolView.initData();  
+				villaToolView.x = 300;
+				villaToolView.y = 250;  
+				this.addElement(villaToolView);
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations> 
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations> 
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="{ColorType.LightGreyBackGround}"/>
+		</s:fill>
+	</s:Rect>
+	<s:Button id="villaFacadeActionMenuTest" x="50" y="50" width="200" height="40" label="villaFacadeActionMenu" click="villaFacadeActionMenuTest_clickHandler(event)"/>
+	<s:Button id="villaToolViewTest1" x="50" y="100" width="200" height="40" label="villaToolView1" click="villaToolViewTest1_clickHandler(event)"/>
+	<s:Button id="villaToolViewTest2" x="50" y="150" width="200" height="40" label="villaToolView2" click="villaToolViewTest2_clickHandler(event)"/>
+	<s:Button id="villaToolViewTest3" x="50" y="200" width="200" height="40" label="villaToolView3" click="villaToolViewTest3_clickHandler(event)"/>
+	<s:Button id="villaToolViewTest4" x="50" y="250" width="200" height="40" label="villaToolView4" click="villaToolViewTest4_clickHandler(event)"/>
+</s:Application>

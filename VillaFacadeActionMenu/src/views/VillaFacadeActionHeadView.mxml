@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 creationComplete="group1_creationCompleteHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.components.VGroup;
+			
+			import components.VillaToolView;
+			
+			import consts.ToolConstsType;
+			import consts.VillaFacadeEventsType;
+			
+			import extension.wl.globalData.allStaticTypes.ColorType;
+			import extension.wl.globalData.allStaticTypes.LivelyType;
+			import extension.wl.models.LabelModel;
+			import extension.wl.views.LineHorizontal;
+			
+			import utils.DatasEvent;
+			import utils.VillaFacadeDispatcher;
+			import utils.VillaFacadeMenuManager;
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			private var basicGroup:VGroup = null;
+			private var toolViewST:VillaToolView = null; //第一层
+			private var toolViewED:VillaToolView = null; //第二层
+			
+			private var lineST:LineHorizontal = null;
+			private var lineED:LineHorizontal = null;
+			
+			protected function group1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			public function initView():void
+			{
+				if(!basicGroup)
+				{
+					var gap:int = 2;
+					basicGroup = VillaFacadeMenuManager.buildVgroup(this.width, this.height, "center", "top", gap);
+					this.addElement(basicGroup);
+				}
+				
+				if(!toolViewST)
+				{
+					toolViewST = new VillaToolView();
+					toolViewST.width = basicGroup.width;
+					toolViewST.height = basicGroup.height * 0.5;
+					toolViewST.pageLength = 4;
+					toolViewST.viewType = ToolConstsType.HEAD_TOOL;
+					toolViewST.addEventListener(VillaToolView.INPUT_CHANGE_EVENT, inputChangeHandler);
+					toolViewST.initData();
+					basicGroup.addElement(toolViewST);
+				}
+				
+				if(!lineST)
+				{
+					lineST = VillaFacadeMenuManager.buildHorizontalLine(ColorType.LightGreyLively);
+					lineST.top = basicGroup.height * 0.5;
+					this.addElement(lineST);
+				}
+				
+				if(!toolViewED)
+				{
+					toolViewED = new VillaToolView();
+					toolViewED.width = basicGroup.width;
+					toolViewED.height = basicGroup.height * 0.5;
+					toolViewED.pageLength = 4;
+					toolViewED.viewType = ToolConstsType.BODY_HEAD_TOOL;
+					toolViewED.addEventListener(VillaToolView.INPUT_CHANGE_EVENT, inputChangeHandler);
+					toolViewED.initData();
+					basicGroup.addElement(toolViewED);
+				}
+				
+				if(!lineED)
+				{
+					lineST = VillaFacadeMenuManager.buildHorizontalLine(ColorType.LightGreyLively);
+					lineST.bottom = 0;
+					this.addElement(lineST);
+				}
+			}
+			
+			protected function inputChangeHandler(event:DatasEvent):void
+			{
+				// TODO Auto-generated method stub
+				var currentModel:LabelModel = event.data as LabelModel;
+				switch(currentModel.labelKey)
+				{
+					case ToolConstsType.VILLA_OFFGROUND: //离地高
+					{
+						VillaFacadeDispatcher.Instance.dispatchEvent(new DatasEvent(VillaFacadeEventsType.UPDATE_OFFGROUND, currentModel.labelValue))
+					}
+						break;
+					case ToolConstsType.VILLA_PARTNUMBER: //部件数
+					{
+						VillaFacadeDispatcher.Instance.dispatchEvent(new DatasEvent(VillaFacadeEventsType.UPDATE_PARTNUM, currentModel.labelValue))
+					}
+						break;
+					case ToolConstsType.VILLA_HEIGHT: //高
+					{
+						VillaFacadeDispatcher.Instance.dispatchEvent(new DatasEvent(VillaFacadeEventsType.UPDATE_PARTHEIGHT, currentModel.labelValue));
+					}
+						break;
+					case ToolConstsType.VILLA_LENGTH: //长
+					{
+						VillaFacadeDispatcher.Instance.dispatchEvent(new DatasEvent(VillaFacadeEventsType.UPDATE_PARTLENGTH, currentModel.labelValue));
+					}
+						break;
+					case ToolConstsType.VILLA_WIDTH: //宽
+					{
+						VillaFacadeDispatcher.Instance.dispatchEvent(new DatasEvent(VillaFacadeEventsType.UPDATE_PARTWIDTH, currentModel.labelValue));
+					}
+						break;
+				}
+			}
+			
+			public function updateView():void
+			{
+				removeToolView();
+				initView();
+			}
+			
+			public function removeAllView():void
+			{
+				removeToolView();
+				removeBasicView();
+			}
+			
+			public function removeToolView():void
+			{
+				if(toolViewST)
+				{
+					toolViewST.removeEventListener(VillaToolView.INPUT_CHANGE_EVENT, inputChangeHandler);
+					basicGroup.removeElement(toolViewST);
+					toolViewST = null;				
+				}
+				
+				if(toolViewED)
+				{
+					toolViewED.removeEventListener(VillaToolView.INPUT_CHANGE_EVENT, inputChangeHandler);
+					basicGroup.removeElement(toolViewED);
+					toolViewED = null;
+				}
+			}
+			
+			public function removeBasicView():void
+			{
+				
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="{LivelyType.backgroundColor}"/>
+		</s:fill>
+	</s:Rect>
+</s:Group>

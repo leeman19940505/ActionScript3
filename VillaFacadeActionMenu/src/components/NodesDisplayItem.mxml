@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 creationComplete="group1_creationCompleteHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Label;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			
+			import L3DLibrary.L3DMaterialInformations;
+			
+			import extension.wl.buttons.LabelButton;
+			import extension.wl.globalData.allStaticTypes.ColorType;
+			import extension.wl.globalData.allStaticTypes.LivelyType;
+			
+			
+			
+			
+			public var isReady:Boolean = false; //资源是否下载好
+			public var itemCount:String = "";
+			private var itemUrl:String = "";
+			public var itemInfo:L3DMaterialInformations = null;
+			private var itemLabel:LabelButton = null;
+			private var itemIndex:Label = null;
+			private var itemBox:UIComponent = null;
+			
+			private var loader:Loader = null;
+			private var content:BitmapData = null;
+			
+			public static const ITEM_READY:String = "item_ready_event";
+			
+			protected function group1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				this.buttonMode = true;
+			}
+			
+			public function get ItemInfo():L3DMaterialInformations
+			{
+				return itemInfo;
+			}
+			
+			public function initItem():void
+			{
+				this.removeAllElements();
+				if(itemBox)
+				{
+					while(itemBox.numChildren)
+					{
+						itemBox.removeChildAt(0);
+					}
+				}
+				initView();
+				if(isReady)
+				{
+					itemStateHandler();
+				}
+			}
+			
+			private function initView():void
+			{
+				// TODO Auto Generated method stub
+				if(!itemBox)
+				{
+					itemBox = new UIComponent();
+				}
+				itemBox.graphics.clear();
+				itemBox.graphics.lineStyle(1, ColorType.LightGreyLively);
+				itemBox.graphics.drawRect(0, 0, this.width, this.height);
+				this.addElement(itemBox);
+			}
+			
+			private function itemStateHandler():void
+			{
+				// TODO Auto Generated method stub
+				if(itemInfo)
+				{
+					bitmapHandler(itemInfo.Preview,itemInfo.name,itemInfo.family,false);
+				}
+			}
+			
+			private function bitmapHandler(bitmapData:BitmapData, name:String, family:String, isDispatch:Boolean = true):void
+			{
+				// TODO Auto Generated method stub
+				isReady = true;
+				if(bitmapData == null && isDispatch)
+				{
+					this.dispatchEvent(new Event(ITEM_READY));
+					return;
+				}
+				
+				var bitmap:Bitmap = new Bitmap(bitmapData);
+				var sca:Number = 1;
+				if(bitmapData.width * this.height > bitmapData.height * this.width)
+				{
+					sca = this.width / bitmapData.width;
+				}
+				else
+				{
+					sca = this.height / bitmapData.height;
+				}
+				
+				bitmap.scaleX = bitmap.scaleY = sca;
+				bitmap.x = this.width - bitmap.width >> 1;
+				bitmap.y = this.height - bitmap.height >> 1;
+				itemBox.addChild(bitmap);
+				
+				buildInfoHandler(name, family);
+				if(isDispatch)
+				{
+					this.dispatchEvent(new Event(ITEM_READY));
+				}
+			}
+			
+			private function buildInfoHandler(name:String, family:String = ""):void
+			{
+				// TODO Auto Generated method stub
+				if(!itemLabel)
+				{
+					itemLabel = LabelButton.buildLabelButton(name, this.width * 0.8, 35, LivelyType.currentStyle,0,false,0,0,0,1);
+					itemLabel.itemColor = LivelyType.libraryTipsColor;
+					itemLabel.topLeftRadius = 5;
+					itemLabel.topRightRadius = 5;
+					itemLabel.bottomLeftRadius = 5;
+					itemLabel.bottomRightRadius = 5;
+					itemLabel.visible = false;
+				}
+				itemLabel.width = this.width * 0.8;
+				itemLabel.resize();
+				itemLabel.x = this.width - itemLabel.width >> 1;
+				itemLabel.y = this.height - itemLabel.height >> 1;
+				this.addElement(itemLabel);
+				
+				if(!itemIndex)
+				{
+					itemIndex = new Label();
+					itemIndex.text = itemCount;
+					itemIndex.setStyle("textAlign", "right");
+					itemIndex.width = 100;
+					itemIndex.height = 20;
+					itemIndex.right = 0; 
+					itemIndex.bottom = 0;
+					itemIndex.visible = false;
+				}
+				this.addElement(itemIndex);
+			}
+			
+			public function overHandler():void
+			{
+				if(itemLabel)
+				{
+					itemLabel.visible = true;
+				}
+				if(itemIndex)
+				{
+					itemIndex.visible = true;
+				}
+			}
+			
+			public function outHandler():void
+			{
+				if(itemLabel)
+				{
+					itemLabel.visible = false;
+				}
+				if(itemIndex)
+				{
+					itemIndex.visible = false;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+</s:Group>

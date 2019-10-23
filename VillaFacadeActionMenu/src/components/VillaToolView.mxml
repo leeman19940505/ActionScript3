@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 creationComplete="group1_creationCompleteHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.components.Group;
+			import spark.components.HGroup;
+			
+			import consts.ToolConstsType;
+			
+			import extension.wl.buttons.LabelButton;
+			import extension.wl.buttons.SvgButton;
+			import extension.wl.buttons.SvgChangeButton;
+			import extension.wl.globalData.allStaticTypes.LivelyType;
+			import extension.wl.globalData.allStaticTypes.SvgType;
+			import extension.wl.models.LabelModel;
+			import extension.wl.views.LabelInputView;
+			
+			import org.osmf.layout.HorizontalAlign;
+			
+			import utils.DatasEvent;
+			import utils.VillaFacadeMenuManager;
+			import utils.VillaFacadeMenuScene;
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			public static const INPUT_CHANGE_EVENT:String = "input_Change_Event";
+			
+			public var viewType:String = ""; //headtool bodyheadtool...
+			public var horizontalAlign:String = HorizontalAlign.LEFT; //item对齐方式
+			public var pageLength:int = 4; //元素一页显示个数 
+			public var itemStatus:int = 0;//元素配色状态
+			
+			private var configData:Array = null; //数据
+			private var viewData:Dictionary = null; //界面显示数据
+			
+			private var infoItems:Array = null;//元素
+			private var currentItem:Object = null;//当前选中Label元素的数据;
+			private var infoTotal:int = 0;//元素总数
+			private var pageTotal:int = 1;//总页数
+			private var pageIndex:int = 0;//当前页
+			
+			private var itemSize:int = LivelyType.Size;
+			private var margin:int = 2; //组件边距 若horizontalAlign为居中时为左右边距；horizontalAlign居左时为左边距；horizontalAlign居右时为右边距。用于动态计算infoBox的gap
+			private var itemWidth:int = 30; //元素宽 动态计算
+			private var itemHeight:int = 30; //元素高 动态计算
+			
+			private var infoBox:HGroup = null;
+			private var stepBox:Group = null;
+			private var pageBtn:SvgChangeButton = null;//翻页按钮
+			
+			public var currentPosition:Point = null;//当前点击item的坐标
+			
+			protected function group1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				buildView();
+			}
+			
+			public function reSize():void			
+			{
+			
+			}
+			
+			public function initData():void
+			{
+				configData = VillaFacadeMenuScene.getCurrentConfigJson(viewType) as Array; //界面配置数据
+				viewData = VillaFacadeMenuScene.currentViewData; //界面显示数据
+				
+				if(configData == null)
+				{
+					return;
+				}
+				
+				infoItems = new Array();
+				infoTotal = configData.length;
+				pageTotal = int(infoTotal / pageLength);
+				
+				if(infoTotal % pageLength > 0)
+				{
+					pageTotal ++;
+				}
+				
+				if(currentItem == null)
+				{
+					pageIndex = 0;	
+				}
+				else
+				{
+					var len:int = configData.length;
+					var currentIndex:int;
+					
+					for(var i:int = 0; i < len; i++)
+					{
+						if(configData[i] == currentItem)
+						{
+							currentIndex = i;
+							break;
+						}
+					}
+					
+					pageIndex = int(currentIndex / pageLength);
+				}
+				
+				if(currentItem == null && configData.length > 0)
+				{
+					currentItem = configData[0];
+				}
+			}
+			
+			private function buildView():void
+			{
+				// TODO Auto Generated method stub
+				if(infoTotal > pageLength)
+				{
+					itemWidth = int(this.width - margin * (pageLength + 1) / 4) / pageLength;
+				}
+				else
+				{
+					itemWidth = int(this.width - margin * (pageLength + 1) / 4) / infoTotal;
+				}
+				itemHeight = int(this.height - 2 * margin);
+				
+				if(!infoBox)
+				{
+					var totalMargin:int = margin * 2;
+					var gap:int;
+					
+					if(infoTotal > pageLength)
+					{
+						gap = int((this.width - totalMargin - itemWidth * pageLength) / (pageLength - 1));
+					}
+					else
+					{
+						gap =  int((this.width - totalMargin - itemWidth * infoTotal) / (infoTotal - 1));
+					}
+					
+					if(horizontalAlign == HorizontalAlign.CENTER)
+					{
+						gap = margin;
+					}
+					infoBox = VillaFacadeMenuManager.buildHgroup(this.width,this.height,horizontalAlign,"middle",gap);//创建page容器
+					if(horizontalAlign == HorizontalAlign.LEFT)
+					{
+						infoBox.left = margin;
+					}
+					if(horizontalAlign == HorizontalAlign.RIGHT)
+					{
+						infoBox.right = margin;
+					}
+					this.addElement(infoBox);
+				}
+				
+				for(var i:int = 0; i < infoTotal; i++)
+				{
+					if(int(configData[i].tooltype) == ToolConstsType.LABELINPUTVIEW) //文本输入框
+					{
+						buildLabelInputElement(configData[i]);						
+					}
+					else if(int(configData[i].tooltype) == ToolConstsType.SVGBUTTON) //svg按钮
+					{
+						buildSvgButtonElement(configData[i]);
+					}
+					else if(int(configData[i].tooltype) == ToolConstsType.LABELBUTTON) //文本按钮
+					{
+						buildLabelButtonElement(configData[i]);
+					}
+				}
+				
+				buildPageButton();//创建翻页按钮
+				pageHandler();//显示当前页元素
+				pageSelectedHandler();//当前页选中元素处理
+			}
+			
+			private function buildPageButton():void
+			{
+				if(!pageBtn)
+				{
+					pageBtn = SvgChangeButton.buildSvgChangeButton(SvgType.PAGEDOWN_EVENT,SvgType.PAGEUP_EVENT,15,15,LivelyType.currentStyle);
+					pageBtn.x = this.width - pageBtn.width - 2;
+					pageBtn.y = 2;	
+					pageBtn.addEventListener(SvgChangeButton.SVGCHANGE_EVENT,pageBtnClickHandler);
+				}
+				pageBtn.buttonStatus = false;
+			}
+			
+			protected function pageBtnClickHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			private function pageHandler():void
+			{
+				// TODO Auto Generated method stub
+				infoBox.removeAllElements();
+				for (var i:int = 0; i < infoTotal; i++) 
+				{
+					if(int(i/pageLength) == pageIndex)
+					{
+//						if(isSVG && (infoItems[i] as SvgButton).svgEvent == SvgType.STEP_CONTROLLER)
+//						{
+//							infoBox.addElement(stepBox);
+//						}
+//						else
+//						{
+							infoBox.addElement(infoItems[i]);
+//						}
+					}
+				}
+				if(infoTotal > pageLength)
+				{
+					this.addElement(pageBtn);
+				}
+			}
+			
+			private function buildSvgButtonElement(info:Object):void
+			{
+				// TODO Auto Generated method stub
+				var svg:SvgButton = SvgButton.buildSvgButton(info.svgevent,itemWidth,itemHeight,LivelyType.currentStyle,itemStatus);
+				svg.addEventListener(MouseEvent.CLICK,svgClickHandler);
+				svg.svgScale = 75;
+				infoItems.push(svg);
+			}
+			
+			private function buildLabelButtonElement(info:Object):void
+			{
+				// TODO Auto Generated method stub
+				var labelWidth:int = 0;
+				var labelLen:int = info.labeltext.length; //当前元素长度
+				
+				if(itemWidth == 0)
+				{
+					labelWidth = LivelyType.sizeLabelWidth(info.name.length)+20;
+					if(itemSize == LivelyType.BigSize)
+					{
+						labelWidth = LivelyType.bigSizeLabelWidth(info.name.length)+20;
+					}
+				}
+				else
+				{
+					labelWidth = itemWidth;
+				}
+				var label:LabelButton = LabelButton.buildLabelButton(info.labeltext,labelWidth,itemHeight,LivelyType.currentStyle,itemStatus, info.buttonmode);
+				label.labelInfo = info;
+				label.viewAlpha = 1;
+				label.labelSize = itemSize;
+				label.itemColor = LivelyType.backgroundColor;
+				label.addEventListener(MouseEvent.CLICK,labelClickHandler);
+				infoItems.push(label);
+			}
+			
+			private function buildLabelInputElement(info:Object):void
+			{
+				// TODO Auto Generated method stub
+				var labelWidth:int = int(itemWidth * 0.35); 
+				var inputWidth:int = int(itemWidth * 0.65);
+				var inputValue:String = viewData[info.keyname];
+				
+				var labelInput:LabelInputView = LabelInputView.buildLabelInputView(info.labeltext, inputValue, itemWidth, itemHeight, LivelyType.currentStyle, 2, 1, "", 0, 0, 0, 1, 1);
+				labelInput.labelWidth = labelWidth;
+				labelInput.inputWidth = inputWidth;
+				labelInput.viewInfo = info;
+				labelInput.addEventListener(LabelInputView.LABELINPUT, inputChangeHandler);
+				infoItems.push(labelInput);
+			}
+			
+			private function pageSelectedHandler():void
+			{
+				// TODO Auto Generated method stub
+				var len:int = infoBox.numElements;
+				for (var i:int = 0; i < len; i++) 
+				{
+					var child:DisplayObject = infoBox.getChildAt(i);
+					if(child is LabelButton)
+					{
+						var button:LabelButton = child as LabelButton;
+						if(button.labelInfo.labeltext == currentItem.name)
+						{
+							button.labelSelected = true;
+							button.selecedHandler();
+						}
+						else
+						{
+							if(button.labelSelected)
+							{
+								button.labelSelected = false;
+								button.selecedHandler();
+							}
+						}
+					}
+					if(child is SvgButton)
+					{
+						continue;
+					}
+				}
+			}
+			
+			protected function svgClickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function labelClickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function inputChangeHandler(event:DatasEvent):void
+			{
+				// TODO Auto-generated method stub
+				var currentModel:LabelModel = event.data as LabelModel;
+				this.dispatchEvent(new DatasEvent(INPUT_CHANGE_EVENT, currentModel));
+			}
+			
+			public function removeAllItems():void
+			{
+				
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+</s:Group>

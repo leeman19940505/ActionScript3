@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 creationComplete="group1_creationCompleteHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.components.VGroup;
+			
+			import datas.NavigationData;
+			
+			import extension.wl.buttons.LabelButton;
+			import extension.wl.buttons.SvgButton;
+			import extension.wl.globalData.allStaticTypes.ColorType;
+			import extension.wl.globalData.allStaticTypes.LivelyType;
+			import extension.wl.globalData.allStaticTypes.SvgType;
+			import extension.wl.models.SvgModel;
+			import extension.wl.utils.MouseUtils;
+			import extension.wl.views.LineVertical;
+			
+			import utils.DatasEvent;
+			import utils.VillaFacadeMenuManager;
+			import utils.VillaFacadeMenuScene;
+			
+			
+			
+			
+			
+			public static const SCENETYPE_CHANGE_EVENT:String = "sceneType_Change_Event"; //当前类型改变
+			
+			public var currentName:String = "";//当前选中label按钮的name
+			public var currentModel:SvgModel = null; //当前选中svg按钮model
+			
+			private var isSvg:Boolean = false; //使用Svg模式还是文本模式
+			private var svgBox:VGroup = null; //svg容器
+			private var labelBox:VGroup = null; // label容器
+			
+			private var navigationDatas:Vector.<NavigationData> = null;
+			private var svgs:Vector.<SvgButton> = null; //存储svg元素
+			private var labels:Vector.<LabelButton> = null; //存储label元素
+			
+			private var line:LineVertical = null;
+			private var closeBtn:SvgButton = null; //关闭按钮
+			
+			protected function group1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			public function initView():void
+			{
+				removeAllItems();
+				
+				navigationDatas = VillaFacadeMenuScene.navigationTypeList();
+				
+				createdCloseButton(1);
+				
+				if(!line)
+				{ 
+					line = VillaFacadeMenuManager.buildVerticalLine(ColorType.LightGreyLively);
+					line.left = 0;
+					this.addElement(line);
+				}
+				
+				
+				var svgNames:Array = VillaFacadeMenuScene.navigationSVGList();
+				var svgTips:Array = VillaFacadeMenuScene.navigationLabelList();
+//				var svgLen:int = svgNames.length;
+				var svgHeight:Number = this.width * svgLen + svgGap * (svgLen + 2);
+				var nameLength:int = svgTips.length;
+				var labelHeight:Number = this.width * nameLength + labelGap * (nameLength + 2);
+				var svgLen:int;
+				
+				if(isSvg)
+				{
+					svgLen = svgNames.length
+					if(!svgBox)
+					{
+						var svgGap:int = 10;
+						svgBox = VillaFacadeMenuManager.buildVgroup(this.width,svgHeight,"center","top",svgGap);
+						svgBox.top = svgGap;
+						this.addElement(svgBox);
+					}
+					
+					svgs = new Vector.<SvgButton>();
+					var svg:SvgButton;
+					
+					for (var i:int = 0; i < svgLen; i++) 
+					{
+						svg = SvgButton.buildSvgButton(svgNames[i],40,40,LivelyType.currentStyle);
+						if(svgTips)
+						{
+							svg.svgTip = svgTips[i];
+						}
+						svg.buttonSelected = true;
+						svg.addEventListener(MouseEvent.CLICK,navigationHandler);
+						svgs.push(svg);
+						svgBox.addElement(svg);
+					}
+				}
+				else
+				{
+					svgLen = navigationDatas.length;
+					if(!labelBox)
+					{
+						var labelGap:int = 0;
+						labelBox = VillaFacadeMenuManager.buildVgroup(this.width,labelHeight,"center","top",labelGap);
+						labelBox.top = labelGap + closeBtn.height;
+						this.addElement(labelBox);
+					}
+					
+					labels = new Vector.<LabelButton>();
+					for (var j:int = 0; j < nameLength; j++) 
+					{
+						var label:LabelButton = LabelButton.buildLabelButton(navigationDatas[j].label,this.width,this.width,LivelyType.currentStyle,1, true, 0, 0, 1);
+						label.addEventListener(MouseEvent.CLICK,navigationLabelHandler);
+						labels.push(label);
+						label.labelInfo = navigationDatas[j];
+						labelBox.addElement(label);
+					}
+					
+					if(currentName.length == 0)
+					{
+						setSelectedHandler(defaultLabel);
+					}
+				}
+				
+			}
+			
+			private function createdCloseButton(status:int):void
+			{
+				var size:int = 40;
+				var gap:int = 5;
+				
+				if(!closeBtn)
+				{
+					closeBtn = SvgButton.buildSvgButton(SvgType.CLOSE_EVENT,size,size,LivelyType.LivelyStyle,status,1);
+					closeBtn.addEventListener(MouseEvent.CLICK,closeBtn_mouseDownHandler);
+					closeBtn.svgScale = 50;
+					closeBtn.right = gap;
+					this.addElement(closeBtn);
+				}
+			}
+			
+			public function get defaultLabel():String
+			{
+				var name:String = "";
+				if(labels.length > 0)
+				{
+					name = labels[0].labelText;
+				}
+				return name;
+			}
+			
+			public function setSelectedHandler(value:String):void
+			{
+				var len:int = labels.length;
+				for(var i:int = 0; i < len; i++)
+				{
+					if(value == labels[i].labelText)
+					{
+						labels[i].labelSelected = true;
+						labels[i].selecedHandler();
+						currentName = value;
+					}
+					else
+					{
+						if(labels[i].labelSelected)	
+						{
+							labels[i].labelSelected = false;
+							labels[i].selecedHandler();
+						}
+					}
+				}
+				
+			}
+			
+			private function removeAllItems():void
+			{
+				// TODO Auto Generated method stub
+				
+			}
+			
+			protected function navigationHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function navigationLabelHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				MouseUtils.stopMouseEvent(event);
+				var currentNavigationLabel:LabelButton = event.currentTarget as LabelButton;
+				var navigationModel:NavigationData = currentNavigationLabel.labelInfo as NavigationData;
+				
+				setSelectedHandler(navigationModel.label);
+				
+				this.dispatchEvent(new DatasEvent(SCENETYPE_CHANGE_EVENT, navigationModel));
+			}
+			
+			protected function closeBtn_mouseDownHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="{LivelyType.backgroundColor}"/>
+		</s:fill>
+	</s:Rect>
+</s:Group>

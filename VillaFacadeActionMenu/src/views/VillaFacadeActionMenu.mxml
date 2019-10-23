@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 width="{listWidth}"
+		 creationComplete="group1_creationCompleteHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import datas.NavigationData;
+			
+			import extension.wl.globalData.allStaticTypes.LivelyType;
+			
+			import utils.DatasEvent;
+			import utils.FitBorder;
+			import utils.VillaFacadeControllerManager;
+			import utils.VillaFacadeMenuManager;
+			import utils.VillaFacadeMenuScene;
+			
+			
+			
+			
+			
+			
+			[Bindable]
+			public static var listWidth:uint;//
+			
+			private var manager:VillaFacadeMenuManager = null;
+			private var controllerManager:VillaFacadeControllerManager = null;
+			private var configLoader:URLLoader = null; 
+			
+			public var listNavigation:VillaFacadeActionNavigationView = null;
+			public var listHead:VillaFacadeActionHeadView = null;
+			public var listBody:VillaFacadeActionBodyView = null
+			public var listFoot:VillaFacadeActionFootView = null;
+			
+			protected function group1_creationCompleteHandler(event:FlexEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			/**
+			 * 启动
+			 * @param type 默认类型为: 外挂
+			 * @param isNormalDownload 是否使用默认加载方式 暂时都为true
+			 */
+			public function setup(type:String = VillaFacadeMenuScene.VILLAFACADE_VIEW_EXTERNAL, isNormalDownloadMode:Boolean = true):void
+			{
+				VillaFacadeMenuScene.sceneType = type;
+				VillaFacadeMenuScene.isNormalDisplayDataDownloadType = isNormalDownloadMode;
+				
+				listWidth = FitBorder.getLibraryWidth(this.height);	
+				loadVillaViewConfigData(); //读取配置文件
+			}
+			
+			private function loadVillaViewConfigData():void
+			{
+				// TODO Auto Generated method stub
+				configLoader = new URLLoader();
+				configLoader.addEventListener(Event.COMPLETE, configLoadCompleteHandler);
+				configLoader.addEventListener(IOErrorEvent.IO_ERROR, configLoadErrorHandler);
+				configLoader.load(new URLRequest("../assets/villaActionMenuConfig.json"));
+			}
+			
+			protected function configLoadErrorHandler(event:IOErrorEvent):void
+			{
+				// TODO Auto-generated method stub
+				configLoader.removeEventListener(Event.COMPLETE, configLoadCompleteHandler);
+				configLoader.removeEventListener(IOErrorEvent.IO_ERROR, configLoadErrorHandler);
+				configLoader = null;
+			}
+			
+			protected function configLoadCompleteHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				var originData:Object = VillaFacadeMenuScene.decodeJson(event.target.data);;
+				if(originData)
+				{
+//					VillaFacadeMenuScene.configJson = originData;
+					VillaFacadeMenuScene.setConfigJson(originData);
+					initControllerHandler();					
+					initManagerHandler();
+				}
+			}
+			
+			private function initControllerHandler():void
+			{
+				// TODO Auto Generated method stub
+				controllerManager = new VillaFacadeControllerManager();
+				controllerManager.main = this;
+				controllerManager.initControllers();
+			}
+			
+			private function initManagerHandler():void
+			{
+				// TODO Auto Generated method stub
+				manager = new VillaFacadeMenuManager();
+				manager.main = this;
+				manager.addEventListener(VillaFacadeMenuManager.CREATION_COMPLETE, createCompleHandler);
+				manager.buildList();
+			}
+			
+			protected function createCompleHandler(event:DatasEvent):void
+			{
+				// TODO Auto-generated method stub
+				var managerInfo:String = event.data as String;
+				switch(managerInfo)
+				{
+					default:
+						//navigation addEventListener
+						listNavigation.addEventListener(VillaFacadeActionNavigationView.SCENETYPE_CHANGE_EVENT, sceneTypeChangeHandler);
+						//body addEventListener
+						//head addEventListener
+						//foot addEventListener
+						break;
+				}
+				
+				
+				
+				if(!this.hasEventListener(MouseEvent.MOUSE_WHEEL))
+				{
+					this.addEventListener(MouseEvent.MOUSE_WHEEL,listWheelHandler);//为list添加鼠标滚轮控制
+				}
+				
+				if(listBody)
+				{
+					listBody.setup(); //节点数据显示
+				}
+			}
+			
+			protected function listWheelHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function sceneTypeChangeHandler(event:DatasEvent):void
+			{
+				// TODO Auto-generated method stub
+				var model:NavigationData = event.data as NavigationData;
+				VillaFacadeMenuScene.sceneType = model.type;
+				
+				controllerManager.changeCurrentSceneTypeController();
+				
+				updateVillaFacadeActionMenu(); //更新界面
+			}
+			
+			private function updateVillaFacadeActionMenu():void
+			{
+				// TODO Auto Generated method stub
+				if(listHead)
+				{
+					listHead.updateView();
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- 将非可视元素（例如服务、值对象）放在此处 -->
+	</fx:Declarations>
+	<s:HGroup id="mainBox" width="{listWidth}" height="100%" right="0" gap="0">
+		
+		<s:Rect width="100%" height="100%">
+			<s:fill>
+				<s:SolidColor color="{LivelyType.backgroundColor}"/>
+			</s:fill>
+		</s:Rect>
+		
+		<s:VGroup id="leftBox" width="{listWidth * 0.85}" height="100%" gap="0">
+			<!--<s:Rect width="100%" height="100%">
+				<s:fill>
+					<s:SolidColor color="{ColorType.DarkGreyLively}"/>
+				</s:fill>
+			</s:Rect>-->
+		</s:VGroup>
+		
+		<s:Group id="rightBox" width="{listWidth * 0.15}" height="100%">
+			<!--<s:Rect width="100%" height="100%">
+				<s:fill>
+					<s:SolidColor color="{ColorType.DeepBlueLively}"/>
+				</s:fill>
+			</s:Rect>-->
+		</s:Group>
+		
+	</s:HGroup>
+</s:Group>
